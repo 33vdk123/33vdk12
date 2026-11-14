@@ -1,0 +1,35 @@
+@import "tailwindcss";
+
+/* خط عربي جيد مع بدائل نظامية إن تعذر تحميل الخط */
+:root {
+  --font-arabic: "Cairo", "Segoe UI", Tahoma, "Noto Kufi Arabic", "Noto Sans Arabic", Arial, sans-serif;
+}
+
+body {
+  font-family: var(--font-arabic);
+}
+
+/* شريط تمرير داكن رقيق يناسب الثيم */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* كود JSON داخل بطاقات الربط */
+pre.code-block {
+  direction: ltr;
+  text-align: left;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.6;
+}

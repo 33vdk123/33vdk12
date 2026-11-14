@@ -1,0 +1,22 @@
+# التبعيات والبناء
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+
+# أسرار — لا تُرفع إلى Git إطلاقًا
+.env
+.env.*
+!.env.example
+
+# Vercel
+.vercel
+
+# متفرقات
+.DS_Store
+npm-debug.log*
+
+# تفريغ ذاكرة الأعطال
+core
+core.*
