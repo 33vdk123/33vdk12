@@ -1,30 +1,33 @@
-// GET /api/health — فحص صحة السيرفر وقاعدة البيانات وخدمة الدمج
+// GET /api/health — فحص حالة المزودين (بلا قاعدة بيانات)
 import { NextResponse } from "next/server";
-import { dbHealthy, ensureSchema } from "@/lib/turso";
-import { availableModels } from "@/lib/models";
-import { checkMergerHealth, mergerBase, mergerConfigured } from "@/lib/merger";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  let dbOk = false;
+  // الصور: Pollinations — تحقق من الوصول بـ GET خفيف (ترويسات فقط)
+  let imagesReady = false;
   try {
-    await ensureSchema();
-    dbOk = await dbHealthy();
+    const res = await fetch("https://image.pollinations.ai/prompt/healthcheck?width=64&height=64&nologo=true", {
+      signal: AbortSignal.timeout(15_000),
+      headers: { Accept: "image/*" },
+    });
+    try { await res.body?.cancel(); } catch {}
+    const ct = res.headers.get("content-type") || "";
+    imagesReady = res.ok && ct.startsWith("image/");
   } catch {
-    dbOk = false;
+    imagesReady = false;
   }
 
-  // merger.healthy = فحص GET {MERGER_API_BASE}/api/config بمهلة 4 ثوانٍ
-  const mergerHealthy = mergerConfigured() ? await checkMergerHealth() : false;
+  const cometapiConfigured = !!process.env.COMETAPI_KEY;
+  const mergerConfigured = /^https?:\/\//.test(process.env.MERGER_API_BASE || "");
 
   return NextResponse.json({
-    ok: dbOk,
-    database: dbOk ? "turso-connected" : "turso-error",
+    ok: imagesReady,
+    images: imagesReady ? "ready" : "unavailable",
+    video: cometapiConfigured ? "configured" : "not-configured",
+    merge: mergerConfigured ? "configured" : "not-configured",
     mcpEndpoint: "/mcp",
-    models: availableModels(),
-    merger: { base: mergerConfigured() ? mergerBase() : "", healthy: mergerHealthy },
     authRequired: !!process.env.MCP_ACCESS_TOKEN,
   });
 }
