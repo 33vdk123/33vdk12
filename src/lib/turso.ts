@@ -1,6 +1,7 @@
 // طبقة قاعدة البيانات — Turso (libSQL) عبر HTTP، متوافقة تمامًا مع بيئة serverless على Vercel
 // لا ملفات SQLite محلية إطلاقًا؛ كل شيء عبر العميل الرسمي @libsql/client
 import { createClient, type Client, type InValue } from "@libsql/client";
+import { POLLINATIONS_KEY_ID, POLLINATIONS_FAKE_KEY } from "./providers/pollinations";
 
 // عميل واحد مشترك يُنشأ كسولًا ويُعاد استخدامه عبر كل الاستدعاءات
 let _client: Client | null = null;
@@ -60,6 +61,14 @@ export function ensureSchema(): Promise<void> {
           created_at TEXT DEFAULT (datetime('now'))
         )
       `);
+      // زرع مفتاح Pollinations المجاني تلقائيًا — بلا مفاتيح فعلية، بلا تسجيل.
+      // created_at = 1970 ليكون أقدم مفتاح فيُجرَّب أولًا دائمًا (getKeyPool تُرتّب تصاعديًا).
+      // INSERT OR IGNORE: إن وُجد من قبل لا يُعاد إدراجه ولا يُعطّل المستخدم.
+      await db.execute({
+        sql: `INSERT OR IGNORE INTO api_keys (id, provider, label, api_key, status, created_at)
+              VALUES (?, 'pollinations', ?, ?, 'active', '1970-01-01 00:00:00')`,
+        args: [POLLINATIONS_KEY_ID, "مجاني بلا حد — Pollinations.ai", POLLINATIONS_FAKE_KEY],
+      });
     })();
   }
   return schemaReady;

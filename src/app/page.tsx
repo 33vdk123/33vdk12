@@ -58,7 +58,11 @@ const TOOLS: { name: string; desc: string }[] = [
 
 // ————— مساعدات عرض —————
 
-const providerLabel: Record<string, string> = { kie: "kie.ai", cometapi: "CometAPI" };
+const providerLabel: Record<string, string> = {
+  pollinations: "Pollinations.ai 🆓",
+  kie: "kie.ai",
+  cometapi: "CometAPI",
+};
 
 const keyStatusLabel: Record<string, { text: string; cls: string }> = {
   active: { text: "نشط", cls: "bg-emerald-500/15 text-emerald-300 border-emerald-500/40" },
@@ -277,12 +281,20 @@ export default function Dashboard() {
           تلقائي عند أي خطأ أو نفاد رصيد دون توقف.
         </p>
 
+        <p className="mb-3 rounded-lg border border-emerald-500/40 bg-emerald-500/5 px-3 py-2 text-xs leading-6 text-emerald-200">
+          🆓 <b>Pollinations.ai مُفعّل تلقائيًا ومجاني بالكامل</b> — يُجرَّب أولًا لكل صورة دون
+          استهلاك رصيد أي مفتاح مدفوع. إن نجح أعطى صورة فورية مجانية، وإن فشل (شبكة/حد مؤقت)
+          انتقل النظام تلقائيًا لمفاتيح kie/CometAPI. لا يحتاج تسجيلًا أو مفتاحًا — يكفي أن يكون
+          «نشطًا» في القائمة أعلاه.
+        </p>
+
         {keys.length === 0 ? (
           <p className="py-6 text-center text-sm text-slate-500">لا توجد مفاتيح بعد — أضف أول مفتاح أعلاه.</p>
         ) : (
           <ul className="space-y-3">
             {keys.map((k, i) => {
               const st = keyStatusLabel[k.status] ?? keyStatusLabel.disabled;
+              const isFree = k.provider === "pollinations";
               return (
                 <li
                   key={k.id}
@@ -294,9 +306,15 @@ export default function Dashboard() {
                   <span className="rounded-md border border-slate-700 bg-slate-800/70 px-2 py-1 text-xs font-bold text-slate-200">
                     {providerLabel[k.provider] ?? k.provider}
                   </span>
-                  <code className="min-w-40 rounded bg-slate-800/60 px-2 py-1 font-mono text-xs text-slate-300" dir="ltr">
-                    {k.masked}
-                  </code>
+                  {isFree ? (
+                    <span className="rounded-full border border-emerald-500/40 bg-emerald-500/10 px-2.5 py-0.5 text-xs font-bold text-emerald-300">
+                      🆓 مجاني تلقائي
+                    </span>
+                  ) : (
+                    <code className="min-w-40 rounded bg-slate-800/60 px-2 py-1 font-mono text-xs text-slate-300" dir="ltr">
+                      {k.masked}
+                    </code>
+                  )}
                   <span className={`rounded-full border px-2.5 py-0.5 text-xs font-bold ${st.cls}`}>{st.text}</span>
                   {k.label && <span className="text-xs text-slate-400">{k.label}</span>}
                   <span className="text-xs text-slate-400" title="استخدام / نجاح / فشل">
@@ -314,12 +332,14 @@ export default function Dashboard() {
                     >
                       {k.status === "disabled" ? "تنشيط" : "تعطيل"}
                     </button>
-                    <button
-                      onClick={() => void removeKey(k.id)}
-                      className="rounded-lg border border-rose-500/40 px-3 py-1.5 text-xs font-bold text-rose-300 transition hover:bg-rose-500/10"
-                    >
-                      حذف
-                    </button>
+                    {!isFree && (
+                      <button
+                        onClick={() => void removeKey(k.id)}
+                        className="rounded-lg border border-rose-500/40 px-3 py-1.5 text-xs font-bold text-rose-300 transition hover:bg-rose-500/10"
+                      >
+                        حذف
+                      </button>
+                    )}
                   </span>
                 </li>
               );

@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { deleteKey, getKeyById, markKey } from "@/lib/turso";
 import { maskKey } from "@/lib/keys";
+import { POLLINATIONS_KEY_ID } from "@/lib/providers/pollinations";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,6 +40,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  // حماية مفتاح Pollinations المجاني من الحذف — هو مزود مجاني دائم يُعاد زرعه تلقائيًا
+  if (id === POLLINATIONS_KEY_ID) {
+    return NextResponse.json(
+      { error: "مفتاح Pollinations المجاني لا يُحذف — هو مزود مجاني دائم. يمكنك تعطيله إن رغبت." },
+      { status: 403 },
+    );
+  }
   const ok = await deleteKey(id);
   if (!ok) {
     return NextResponse.json({ error: "المفتاح غير موجود" }, { status: 404 });
